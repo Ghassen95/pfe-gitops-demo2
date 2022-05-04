@@ -3,10 +3,6 @@ name: Maven package and publish & cache dependencies
 on:
   push:
     branches: [ main ]
-    tags: ["v.*"]
-env:
-  IMAGE_NAME: pfe-gitops-demo
-
 
 jobs:
   github-actions-ci:
@@ -43,13 +39,7 @@ jobs:
           mvn --batch-mode deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_SECRET }}
-  build:
-    needs: github-actions-ci
-    name: Build container image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+ 
       - name: Build and push container image
         uses: azure/docker-login@v1
         with:
