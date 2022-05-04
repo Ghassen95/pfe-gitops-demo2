@@ -1,0 +1,44 @@
+name: Maven package and publish & cache dependencies
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+
+jobs:
+  github-actions-ci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    name: "Continous Integration"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: "8"
+          distribution: "zulu"
+          cache: maven
+        
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build and force snapshot updates with Maven
+        run: |
+          mvn -B package --file pom.xml -DskipTests
+
+      - name: Deploy to GitHub Packages
+        run: |
+          mvn --batch-mode deploy -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_SECRET }}
