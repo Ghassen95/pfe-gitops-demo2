@@ -57,5 +57,5 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
       - run: |
-          docker build . -t ${{ secrets.AZURE_ACR }}/pfe-gitops-demo:${{ github.sha }}
-          docker push ${{ secrets.AZURE_ACR }}/pfe-gitops-demo:${{ github.sha }}
+          docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/pfe-gitops-demo:${{ github.sha }}
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/pfe-gitops-demo:${{ github.sha }}
