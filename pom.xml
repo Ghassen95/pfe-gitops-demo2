@@ -11,8 +11,8 @@
 
 
 	<groupId>tn.esprit.spring</groupId>
-	<artifactId>pfe-gitops-demo</artifactId>
-	<version>1.0</version>
+	<artifactId>pfe-gitops-demo2</artifactId>
+	<version>1.4</version>
 	<description>PFE GitOps demo app</description>
 
 	<properties>
@@ -75,7 +75,7 @@
 		<repository>
 		  <id>github</id>
 		  <name>GitHub Packages</name>
-		  <url>https://maven.pkg.github.com/Ghassen95/pfe-gitops-demo</url>
+		  <url>https://maven.pkg.github.com/Ghassen95/pfe-gitops-demo2</url>
 		</repository>
 	  </distributionManagement>
 </project>
