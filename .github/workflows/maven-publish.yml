@@ -57,7 +57,7 @@ jobs:
         run: |
           mvn --batch-mode deploy -DskipTests
         env:
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_SECRET2 }}
 
       - name: Get project version from pom.xml
         id: project_version
