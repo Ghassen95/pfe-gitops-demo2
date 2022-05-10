@@ -1,15 +1,25 @@
-name: Maven package and publish & cache dependencies
+name: "Continous Integration"
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
 
 jobs:
-  github-actions-ci:
+  ci:
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       packages: write
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'java' ]
+  
     name: "Continous Integration"
 
     steps:
@@ -29,23 +39,38 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
 
       - name: Build and force snapshot updates with Maven
         run: |
           mvn -B package --file pom.xml -DskipTests
 
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
       - name: Deploy to GitHub Packages
         run: |
           mvn --batch-mode deploy -DskipTests
         env:
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_SECRET }}
- 
-      - name: Build and push container image
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_SECRET2 }}
+
+      - name: Get project version from pom.xml
+        id: project_version
+        run: |
+          echo "::set-output name=PROJECT_VERSION::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+
+      - name: "Push container image to ACR (Azure Container Registry)"
         uses: azure/docker-login@v1
         with:
           login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
       - run: |
-          docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/pfe-gitops-demo:${{ github.sha }}
-          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/pfe-gitops-demo:${{ github.sha }}
+          docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/pfe-gitops-demo:${{ steps.project_version.outputs.PROJECT_VERSION }}
+          docker image tag ${{ secrets.REGISTRY_LOGIN_SERVER }}/pfe-gitops-demo:${{ steps.project_version.outputs.PROJECT_VERSION }} ${{ secrets.AZURE_ACR }}/pfe-gitops-demo:latest
+          docker push --all-tags ${{ secrets.REGISTRY_LOGIN_SERVER }}/pfe-gitops-demo
